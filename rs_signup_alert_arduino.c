@@ -7,28 +7,30 @@
  * Modified 2011 ian@ian-halpern.com
  */
 
-// TONES  ==========================================
-// Start by defining the relationship between
-//       note, period, &  frequency.
-#define  note_c1     3830    // 261 Hz
-#define  note_d1     3400    // 294 Hz
-#define  note_e1     3038    // 329 Hz
-#define  note_f1     2864    // 349 Hz
-#define  note_g1     2550    // 392 Hz
-#define  note_a1     2272    // 440 Hz
-#define  note_as1     2172    // 440 Hz
-#define  note_b1     2028    // 493 Hz
-#define  note_c2     1912    // 523 Hz
-#define  note_d2 1700
-#define  note_e2 1519
-#define  note_f2 1432
-#define  note_g2 1275
-#define  note_a2 1136
-#define  note_as2 1075
-#define  note_b2 1014
-#define  note_c3 956
-// Define a special note, 'R', to represent a rest
-#define  note_r     0
+#define C 0
+#define D 1
+#define E 2
+#define F 3
+#define G 4
+#define A 5
+#define B 6
+#define R 7
+
+#define NOTE(n,o) (notes[n]/o)
+#define SHARP(n,o) ((notes[n] - (notes[n] - notes[n+1])/2 )/o)
+#define FLAT(n,o) ((notes[n] + (notes[n+1] - notes[n])/2 )/o)
+#define REST 0
+
+int notes[] = {
+	3830,    // C - 261 Hz
+	3400,    // D - 294 Hz
+	3038,    // E - 329 Hz
+	2864,    // F - 349 Hz
+	2550,    // G - 392 Hz
+	2272,    // A - 440 Hz
+	2028    // B- 493 Hz
+};
+
 
 // SETUP ============================================
 // Set up speaker on a PWM pin (digital 9, 10 or 11)
@@ -47,9 +49,16 @@ void setup() {
 // MELODY and TIMING  =======================================
 //  melody[] is an array of notes, accompanied by beats[],
 //  which sets each note's relative length (higher #, longer note)
-int melody[] = {  note_c2*2,  note_c3*2,  note_a1*2,  note_a2*2, note_as1*2, note_as2*2, note_r };
-int beats[]  = { 16, 10, 16, 10, 16, 10, 32 };
-int MAX_COUNT = sizeof(melody) / 2; // Melody length, for looping.
+// int melody_mario[] = {  note_c2*2,  note_c3*2,  note_a1*2,  note_a2*2, note_as1*2, note_as2*2, note_r };
+int melody_mario[] = {  NOTE(C,1), NOTE(C,2),  NOTE(A,0.5), NOTE(A,1), SHARP(A,0.5), SHARP(A,1), REST };
+int beats_mario[]  = { 16, 10, 16, 10, 16, 10, 32 };
+
+// int melody_gadget[] = {  note_c2*2,  note_d2*2,  note_e2*2,  note_f2*2, note_g2*2, note_e2*2, note_fs2*2, note_d2*2, note_f2*2, note_e2*2, note_r };
+int melody_gadget[] = { NOTE(C,1), NOTE(D,1), FLAT(E,1), NOTE(F,1), NOTE(G,1), FLAT(E,1), SHARP(F,1), NOTE(D,1),
+					    NOTE(F,1), FLAT(E,1), NOTE(C,1), NOTE(D,1), FLAT(E,1), NOTE(F,1), NOTE(G,1), NOTE(C,2), FLAT(B,0.5), REST };
+int beats_gadget[]  = { 12, 12, 12, 12, 24, 24, 24, 24, 24, 24, 12, 12, 12, 12, 24, 24, 32, 32 };
+
+int MAX_COUNT = sizeof(melody_mario) / 2; // Melody length, for looping.
 
 // Set overall tempo
 long tempo = 10000;
@@ -84,14 +93,14 @@ void playTone() {
   }
   else { // Rest beat; loop times delay
     for (int j = 0; j < rest_count; j++) { // See NOTE on rest_count
-      delayMicroseconds(duration);  
-    }                                
-  }                                
+      delayMicroseconds(duration);
+    }
+  }
 }
 
-void playMelody() {
+void playMelody( int melody[], int beats[], int count ) {
   // Set up a counter to pull from melody[] and beats[]
-  for (int i=0; i<MAX_COUNT; i++) {
+  for (int i=0; i<count; i++) {
     tone_ = melody[i];
     beat = beats[i];
 
@@ -111,13 +120,20 @@ void loop() {
 		// say what you got:
 		Serial.print("I received: ");
 		Serial.println(incomingByte, DEC);
-                if ( incomingByte == 115 ) {
+                if ( incomingByte == 116 ) {
                   digitalWrite(ledPin, HIGH);   // sets the LED on
                   delay(1000);                  // waits for a second
                   digitalWrite(ledPin, LOW);    // sets the LED off
-                  playMelody();
+                  playMelody( melody_mario, beats_mario, sizeof(melody_mario) / 2 );
+                }
+                else if ( incomingByte == 112 ) {
+                  digitalWrite(ledPin, HIGH);   // sets the LED on
+                  delay(1000);                  // waits for a second
+                  digitalWrite(ledPin, LOW);    // sets the LED off
+                  playMelody( melody_gadget, beats_gadget, sizeof(melody_gadget) / 2 );
                 }
 	}
 
-  
+
 }
+
