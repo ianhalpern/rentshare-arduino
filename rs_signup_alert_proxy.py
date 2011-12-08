@@ -25,6 +25,13 @@ ser = serial.Serial('/dev/ttyACM0', 9600)
 input = [server,sys.stdin]
 running = 1
 
+print 'RentShare Signup Alert Proxy'
+print '    Usage: q - quit, t - tenant alert, p - property manager alert'
+print ''
+
+sys.stdout.write('>>> ')
+sys.stdout.flush()
+
 while running:
 	inputready,outputready,exceptready = select.select(input,[],[])
 
@@ -37,8 +44,14 @@ while running:
 
 		elif s == sys.stdin:
 			# handle standard input
-			junk = sys.stdin.readline()
-			running = 0
+			data = sys.stdin.readline().strip()
+			if data in ( 'q', 'quit' ):
+				running = 0
+				print 'Quitting'
+			else:
+				ser.write(data)
+				sys.stdout.write('>>> ')
+				sys.stdout.flush()
 
 		else:
 			# handle all other sockets
