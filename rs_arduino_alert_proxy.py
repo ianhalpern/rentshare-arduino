@@ -20,12 +20,12 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server.bind((sock_host,sock_port))
 server.listen(backlog)
-ser = serial.Serial('/dev/ttyACM0', 9600)
+ser = serial.Serial(ser_host, 9600)
 
 input = [server,sys.stdin]
 running = 1
 
-print 'RentShare Signup Alert Proxy'
+print 'RentShare Arduino Alert Proxy'
 print '    Usage: q - quit, t - tenant alert, p - property manager alert'
 print ''
 
