@@ -20,13 +20,13 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server.bind((sock_host,sock_port))
 server.listen(backlog)
-ser = serial.Serial(ser_host, 9600)
+ser = serial.Serial(ser_host, ser_port)
 
 input = [server,sys.stdin]
 running = 1
 
-print 'RentShare Arduino Alert Proxy'
-print '    Usage: q - quit, t - tenant alert, p - property manager alert'
+print 'RentShare Arduino Proxy'
+print '    Usage: write message and press enter. (max 7 characters)'
 print ''
 
 sys.stdout.write('>>> ')
@@ -45,13 +45,10 @@ while running:
 		elif s == sys.stdin:
 			# handle standard input
 			data = sys.stdin.readline().strip()
-			if data in ( 'q', 'quit' ):
-				running = 0
-				print 'Quitting'
-			else:
-				ser.write(data)
-				sys.stdout.write('>>> ')
-				sys.stdout.flush()
+			ser.write(data)
+			ser.write(chr(0))
+			sys.stdout.write('>>> ')
+			sys.stdout.flush()
 
 		else:
 			# handle all other sockets

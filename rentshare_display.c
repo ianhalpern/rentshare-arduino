@@ -8,19 +8,18 @@
 #define SegF 8
 #define SegG 7
 
-#define Dig0 0
-#define Dig1 1
-#define Dig2 2
-#define Dig3 3
-#define Dig4 4
-#define Dig5 5
-#define Dig6 6
+#define Dig0 34
+#define Dig1 32
+#define Dig2 30
+#define Dig3 28
+#define Dig4 26
+#define Dig5 24
+#define Dig6 22
 
 #define REFRESH_RATE 1
 
-#define SPACE 36
-
-#define C( c ) ( (c) - 87 )
+#define SERIAL_TERM_CHAR 0
+#define SERIAL_BUFFER_SIZE 8
 
 const char seg_num_to_pin[]    = { SegA, SegB, SegC, SegD, SegE, SegF, SegG };
 const char digit_num_to_pin[]  = { Dig0, Dig1, Dig2, Dig3, Dig4, Dig5, Dig6 };
@@ -40,8 +39,7 @@ const char char_to_seg_map[] = {
   /* blank */
   0b0000000 };
 
-
-char display[7] = { SPACE, SPACE, SPACE, 1, 0, 0, 0 };
+char display[7] = { '8', '8', '8', '8', '8', '8', '8' };
 
 void setup() {
 	for ( char i = 0; i < sizeof( seg_num_to_pin ); i++ )
@@ -51,6 +49,7 @@ void setup() {
 		pinMode( digit_num_to_pin[i], OUTPUT );
 
 	clear();
+	Serial.begin(9600);
 }
 
 void clear() {
@@ -61,8 +60,22 @@ void clear() {
 		digitalWrite( digit_num_to_pin[i], HIGH );
 }
 
-bool digitContainsSeg( char digit, char seg ) {
-	return BIT_ISSET( char_to_seg_map[ digit ], seg_num_to_bit[ seg ] );
+char asciiToSegMap( char c ) {
+	//Serial.print(c - 48,DEC);
+	if ( c <= 57 && c >= 48 )
+		return char_to_seg_map[ c - 48 ];
+	if ( c <= 122 && c >= 97 )
+		return char_to_seg_map[ c - 87 ];
+	if ( c <= 90 && c >= 65 )
+		return char_to_seg_map[ c - 55 ];
+	if ( c == 32 )
+		return char_to_seg_map[ sizeof( char_to_seg_map ) - 1 ];
+
+	return char_to_seg_map[ sizeof( char_to_seg_map ) - 1 ];
+}
+
+bool digitContainsSeg( char c, char seg ) {
+	return BIT_ISSET( asciiToSegMap( c ), seg_num_to_bit[ seg ] );
 }
 
 void draw() {
@@ -78,10 +91,34 @@ void draw() {
 	}
 }
 
-unsigned int t = 0;
-
 void loop() {
 	draw();
+
+	if ( Serial.available() > 0 ) {
+		char buffer[ SERIAL_BUFFER_SIZE ] = {0,0,0,0,0,0,0,0};
+		// read the incoming byte:
+		Serial.readBytesUntil( SERIAL_TERM_CHAR, buffer, sizeof( buffer ) );
+
+		// say what you got:
+		Serial.print("I received: ");
+		Serial.print( buffer );
+		memcpy( display, buffer, sizeof( display ) );
+		/*
+			if ( incomingByte == 116 ) {
+			  digitalWrite(ledPin, HIGH);   // sets the LED on
+			  delay(1000);                  // waits for a second
+			  digitalWrite(ledPin, LOW);    // sets the LED off
+			  playMelody( melody_mario, beats_mario, sizeof(melody_mario) / 2 );
+			}
+			else if ( incomingByte == 112 ) {
+			  digitalWrite(ledPin, HIGH);   // sets the LED on
+			  delay(1000);                  // waits for a second
+			  digitalWrite(ledPin, LOW);    // sets the LED off
+			  playMelody( melody_gadget, beats_gadget, sizeof(melody_gadget) / 2 );
+			}
+		}
+		*/
+	}
 
 	/*
 	t++;

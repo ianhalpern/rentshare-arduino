@@ -53,6 +53,9 @@ void setup() {
 int melody_mario[] = {  NOTE(C,1), NOTE(C,2),  NOTE(A,0.5), NOTE(A,1), SHARP(A,0.5), SHARP(A,1), REST };
 int beats_mario[]  = { 16, 10, 16, 10, 16, 10, 32 };
 
+int melody_mario_coin[] = {  NOTE(B,2), FLAT(E,4), REST };
+int beats_mario_coin[]  = { 10, 20, 32 };
+
 // int melody_gadget[] = {  note_c2*2,  note_d2*2,  note_e2*2,  note_f2*2, note_g2*2, note_e2*2, note_fs2*2, note_d2*2, note_f2*2, note_e2*2, note_r };
 int melody_gadget[] = { NOTE(C,1), NOTE(D,1), FLAT(E,1), NOTE(F,1), NOTE(G,1), FLAT(E,1), SHARP(F,1), NOTE(D,1),
 					    NOTE(F,1), FLAT(E,1), NOTE(C,1), NOTE(D,1), FLAT(E,1), NOTE(F,1), NOTE(G,1), NOTE(C,2), FLAT(B,0.5), REST };
@@ -131,6 +134,12 @@ void loop() {
                   delay(1000);                  // waits for a second
                   digitalWrite(ledPin, LOW);    // sets the LED off
                   playMelody( melody_gadget, beats_gadget, sizeof(melody_gadget) / 2 );
+                }
+				else if ( incomingByte == 99 ) {
+                  //digitalWrite(ledPin, HIGH);   // sets the LED on
+                  //delay(1000);                  // waits for a second
+                  digitalWrite(ledPin, LOW);    // sets the LED off
+                  playMelody( melody_mario_coin, beats_mario_coin, sizeof(melody_mario_coin) / 2 );
                 }
 	}
 
