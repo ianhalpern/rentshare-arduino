@@ -19,7 +19,7 @@
 #define REFRESH_RATE 1
 
 #define SERIAL_TERM_CHAR 0
-#define SERIAL_BUFFER_SIZE 8
+#define DISPLAY_BUFFER_SIZE 7
 
 const char seg_num_to_pin[]    = { SegA, SegB, SegC, SegD, SegE, SegF, SegG };
 const char digit_num_to_pin[]  = { Dig0, Dig1, Dig2, Dig3, Dig4, Dig5, Dig6 };
@@ -39,7 +39,7 @@ const char char_to_seg_map[] = {
   /* blank */
   0b0000000 };
 
-char display[7] = { '8', '8', '8', '8', '8', '8', '8' };
+char display_buffer[DISPLAY_BUFFER_SIZE] = { '8', '8', '8', '8', '8', '8', '8' };
 
 void setup() {
 	for ( char i = 0; i < sizeof( seg_num_to_pin ); i++ )
@@ -80,14 +80,15 @@ bool digitContainsSeg( char c, char seg ) {
 
 void draw() {
 	for ( char seg_num = 0; seg_num < sizeof( seg_num_to_pin ); seg_num++ ) {
+
+		for ( char j = 0; j < sizeof( display_buffer ); j++ )
+			digitalWrite( digit_num_to_pin[j], !digitContainsSeg( display_buffer[j], seg_num ) );
+
 		digitalWrite( seg_num_to_pin[ seg_num ], HIGH );
 
-		for ( char j = 0; j < sizeof( display ); j++ )
-			if ( digitContainsSeg( display[j], seg_num ) )
-				digitalWrite( digit_num_to_pin[j], LOW );
-
 		delay( REFRESH_RATE );
-		clear();
+
+		digitalWrite( seg_num_to_pin[ seg_num ], LOW );
 	}
 }
 
@@ -95,29 +96,13 @@ void loop() {
 	draw();
 
 	if ( Serial.available() > 0 ) {
-		char buffer[ SERIAL_BUFFER_SIZE ] = {0,0,0,0,0,0,0,0};
 		// read the incoming byte:
-		Serial.readBytesUntil( SERIAL_TERM_CHAR, buffer, sizeof( buffer ) );
-
+		char input_buffer[DISPLAY_BUFFER_SIZE] = { 0, 0, 0, 0, 0, 0, 0 };
+		Serial.readBytesUntil( SERIAL_TERM_CHAR, input_buffer, sizeof( input_buffer ) );
+		memcpy( display_buffer, input_buffer, sizeof( display_buffer ) );
 		// say what you got:
 		Serial.print("I received: ");
-		Serial.print( buffer );
-		memcpy( display, buffer, sizeof( display ) );
-		/*
-			if ( incomingByte == 116 ) {
-			  digitalWrite(ledPin, HIGH);   // sets the LED on
-			  delay(1000);                  // waits for a second
-			  digitalWrite(ledPin, LOW);    // sets the LED off
-			  playMelody( melody_mario, beats_mario, sizeof(melody_mario) / 2 );
-			}
-			else if ( incomingByte == 112 ) {
-			  digitalWrite(ledPin, HIGH);   // sets the LED on
-			  delay(1000);                  // waits for a second
-			  digitalWrite(ledPin, LOW);    // sets the LED off
-			  playMelody( melody_gadget, beats_gadget, sizeof(melody_gadget) / 2 );
-			}
-		}
-		*/
+		Serial.print( display_buffer );
 	}
 
 	/*
